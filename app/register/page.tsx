@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { Eye, EyeOff, GraduationCap, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
@@ -9,6 +11,11 @@ import { Button } from "../../components/ui/button";
 
 
 const Register = () => {
+
+  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,6 +39,7 @@ const Register = () => {
           description: "Passwords do not match. Please try again.",
         //   variant: "destructive",
         });
+        setLoading(false);
       return;
     }
 
@@ -41,12 +49,13 @@ const Register = () => {
           description: "Please agree to the terms and conditions.",
           // variant: "destructive",
         });
+        setLoading(false);
       return;
     }
 
-    try{
+    setLoading(true);
 
-      console.log("Form Data:", formData);
+    try{
 
       const respond = await fetch("/api/v1/register", {
         method: "POST",
@@ -69,12 +78,19 @@ const Register = () => {
           description: data.message || "Something went wrong. Please try again.",
           // variant: "destructive",
         });
+        setLoading(false);
         return;
       }else {
         showToast({
           title: "Registration Successful",
           description: "Please check your email for verification.",
         });
+
+        setLoading(false);
+
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
       }
 
     } catch (error) {
@@ -273,10 +289,33 @@ const Register = () => {
             <Button
               id="submit"
               type="submit"
-              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold"
+              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold flex items-center justify-center"
               size={"lg"}
+              disabled={loading}
             >
-              Create Account
+              {loading ? (
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+              ) : null}
+              {loading ? "Creating..." : "Create Account"}
             </Button>
           </form>
 
