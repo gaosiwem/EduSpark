@@ -23,7 +23,7 @@ const Register = () => {
 //   const { toast } = useToast();
 //   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -44,13 +44,42 @@ const Register = () => {
       return;
     }
 
-    // Simulate registration
-    showToast({
-      title: "Account Created",
-      description: "Please check your email for verification.",
-    });
-    console.log("Registration attempt:", formData);
-    // navigate("/email-verification");
+    try{
+
+      console.log("Form Data:", formData);
+
+      const respond = await fetch("/api/v1/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+        }),
+      });
+
+      const data = await respond.json();
+
+      if (respond.status !== 201) {
+        showToast({
+          title: "Registration Failed",
+          description: data.message || "Something went wrong. Please try again.",
+          // variant: "destructive",
+        });
+        return;
+      }else {
+        showToast({
+          title: "Registration Successful",
+          description: "Please check your email for verification.",
+        });
+      }
+
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
