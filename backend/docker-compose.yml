@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  # db-init:
+  #   build: .
+  #   # command: python db/init_db.py
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=${DATABASE_URL}
+
+  backend:
+    build: .
+    image: eduspark-backend
+    command: uvicorn main:app  --host 0.0.0.0 --port 8004 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8004:8004"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - PYTHONPATH=/app
+
+volumes:
+  pg_data:

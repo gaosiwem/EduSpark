@@ -1,0 +1,26 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store
+
+# Environment
+.env
+*.env
+
+.venv
+
+# VSCode
+.vscode/
+
+# iOS / Android (if mobile is React Native)
+*.xcworkspace
+*.xcodeproj
+android/.gradle
+android/app/build
+ios/Pods

@@ -1,0 +1,57 @@
+[
+  {
+    "question": "What is the primary purpose of photosynthesis in plants?",
+    "options": {
+      "A": "To absorb water from the soil",
+      "B": "To produce food using sunlight",
+      "C": "To protect the plant from animals",
+      "D": "To help the plant breathe"
+    },
+    "correct": "B",
+    "explanation": "Photosynthesis allows plants to convert sunlight into food (glucose)."
+  },
+  {
+    "question": "Which gas is taken in by plants during photosynthesis?",
+    "options": {
+      "A": "Oxygen",
+      "B": "Nitrogen",
+      "C": "Carbon dioxide",
+      "D": "Hydrogen"
+    },
+    "correct": "C",
+    "explanation": "Plants absorb carbon dioxide from the air to use in the photosynthesis process."
+  },
+  {
+    "question": "Which part of the plant is mainly responsible for photosynthesis?",
+    "options": {
+      "A": "Roots",
+      "B": "Flowers",
+      "C": "Leaves",
+      "D": "Stem"
+    },
+    "correct": "C",
+    "explanation": "Leaves contain chlorophyll and are the main site for photosynthesis."
+  },
+  {
+    "question": "What is the role of chlorophyll in photosynthesis?",
+    "options": {
+      "A": "It transports nutrients",
+      "B": "It stores food",
+      "C": "It absorbs sunlight",
+      "D": "It provides water to the plant"
+    },
+    "correct": "C",
+    "explanation": "Chlorophyll is the green pigment that captures sunlight energy needed for photosynthesis."
+  },
+  {
+    "question": "What are the end products of photosynthesis?",
+    "options": {
+      "A": "Carbon dioxide and oxygen",
+      "B": "Water and sunlight",
+      "C": "Oxygen and glucose",
+      "D": "Glucose and carbon dioxide"
+    },
+    "correct": "C",
+    "explanation": "Photosynthesis produces glucose (sugar) and oxygen as by-products."
+  }
+]
