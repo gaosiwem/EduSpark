@@ -10,6 +10,7 @@ import { Link, router } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import Constants from 'expo-constants';
 import { showMessage } from "react-native-flash-message";
+import { useAuth } from '../../state/store/appStore';
 
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
@@ -34,8 +35,11 @@ function Login() {
     },
     mode: 'onTouched',
   });
+
   const [isSubmitting, setSubmitting] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const setToken = useAuth((state: any) => state.setToken);
+  const setUser = useAuth((state: any) => state.setUser)
 
   const onSubmit = async (formData: any) => {
       try 
@@ -57,6 +61,9 @@ function Login() {
         });
 
         const data = await response.json();
+        await setToken(data.access_token);
+        await setUser(data.user);
+        
         console.log("data", data)
 
         if(response.ok) {

@@ -1,22 +1,11 @@
-import { router, SplashScreen, Stack, useNavigation } from "expo-router";
-import {useFonts} from 'expo-font'
+import { Slot } from "expo-router";
+import { useFonts } from "expo-font";
 import "../global.css";
-import { Drawer } from 'expo-router/drawer';
-import { useEffect } from "react";
-import { Pressable } from "react-native";
-import { DrawerActions } from "@react-navigation/native";
-import { icons } from "@/constants";
 import FlashMessage from "react-native-flash-message";
-import { Slot } from 'expo-router';
-import { useState } from 'react';
-import Constants from "expo-constants";
 
-
-const expoPublicKey = Constants.expoConfig?.extra?.expoPublicKey;
 
 export default function RootLayout() {
-
-    const [fontsLoaded, error] = useFonts({
+  const [fontsLoaded] = useFonts({
     "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
     "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
     "Poppins-ExtraBold": require("../assets/fonts/Poppins-ExtraBold.ttf"),
@@ -28,20 +17,12 @@ export default function RootLayout() {
     "Poppins-Thin": require("../assets/fonts/Poppins-Thin.ttf"),
   });
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  //   useEffect(() => {
-  //   // Always redirect to main screen when app loads
-  //   router.replace('/(main)');
-  // }, []);
-  
-  // if (!isLoggedIn) {
-  //   return <Slot initialRouteName="(auth)/login" screenOptions={{ headerShown: false }} />;
-  // }
+  if (!fontsLoaded) return null;
 
   return (
-        <Stack>
-          <Stack.Screen name="(main)" options={{ headerShown: false }} />
-        </Stack>
-  );
+        <>
+          <Slot />;
+          <FlashMessage position="top" />
+        </>
+  )
 }

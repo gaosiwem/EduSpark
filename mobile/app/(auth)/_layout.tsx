@@ -1,12 +1,27 @@
-import { Redirect, Stack } from 'expo-router'
+import { useAuth } from '@/state/store/appStore';
+import { Redirect, Slot, Stack, useRouter } from 'expo-router'
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
 
 export default function AuthRoutesLayout() {
-  // const { isSignedIn } = useAuth()
+  const user = useAuth((state) => state.user);
+  const hydrated = useAuth((state) => state.hydrated);
+  const router = useRouter();
 
-  // if (isSignedIn) {
-  //   return <Redirect href={'/'} />
-  // }
+  useEffect(() => {
+    if (hydrated && !user) {
+      router.replace("/login");
+    }
+  }, [hydrated, user]);
 
-  return <Stack />
+  if (!hydrated) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return <Slot />;
 }

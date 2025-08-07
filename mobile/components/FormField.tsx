@@ -74,7 +74,7 @@ const FormField = ({
         )}
       </View>
         {error && (
-        <Text className="text-red-500 text-sm font-pregular">{error}</Text>
+        <Text className="text-red-500 text-lg font-pregular">{error}</Text>
       )}
     </View>
   );

@@ -40,3 +40,4 @@ python-jose[cryptography]
 authlib
 alembic
 psycopg2-binary
+torch>=2.1.1
