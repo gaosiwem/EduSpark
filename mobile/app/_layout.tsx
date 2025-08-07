@@ -9,8 +9,6 @@ import { icons } from "@/constants";
 import FlashMessage from "react-native-flash-message";
 import { Slot } from 'expo-router';
 import { useState } from 'react';
-import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo'
-import { tokenCache } from '@clerk/clerk-expo/token-cache'
 import Constants from "expo-constants";
 
 
@@ -42,12 +40,8 @@ export default function RootLayout() {
   // }
 
   return (
-    <ClerkProvider publishableKey={expoPublicKey} tokenCache={tokenCache}>
-      <ClerkLoaded>
         <Stack>
           <Stack.Screen name="(main)" options={{ headerShown: false }} />
         </Stack>
-      </ClerkLoaded>
-    </ClerkProvider>
   );
 }

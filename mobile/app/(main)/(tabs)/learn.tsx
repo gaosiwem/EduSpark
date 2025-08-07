@@ -3,7 +3,7 @@ import { Dimensions, View, Text, ScrollView, RefreshControl, SafeAreaView, Keybo
 import NavigationTabs from '@/components/NavigationTabs';
 import ChatInputWithIcons from '@/components/ChatInputWithIcons';
 import Constants from 'expo-constants';
-import { useTranscriptStore } from '@/state/store/useTranscriptStore';
+import { useTranscriptStore } from '@/state/store/appStore';
 import { useChat } from '@/hooks/useChat';
 import { getConversationHistory } from '@/api-service/api-call';
 import { ChatHistoryApiResponse, ProcessedConversation } from '@/interfaces';

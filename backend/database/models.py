@@ -5,6 +5,7 @@ from sqlalchemy import JSON, Column, ForeignKey, Integer, String, Boolean, DateT
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from database.db import Base
+from database.db import Base
 from schema_models.schema import SubscriptionStatus
 
 load_dotenv()

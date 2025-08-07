@@ -12,7 +12,7 @@ import FileUploadButton from "@/components/FileUploadButton";
 import PasteLinkTextButton from "@/components/PasteLinkTextButton";
 import AudioVideoRecorder from "@/components/AudioVideoRecorder";
 import LearnAnythingButton from "@/components/LearnAnythingButton";
-import { useTranscriptStore } from '@/state/store/useTranscriptStore';
+import { useTranscriptStore } from '@/state/store/appStore';
 import { getUploadedFiles } from "@/api-service/api-call";
 import Menu from "./Menu";
 
