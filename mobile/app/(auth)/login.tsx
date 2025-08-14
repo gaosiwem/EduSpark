@@ -10,7 +10,19 @@ import { Link, router } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import Constants from 'expo-constants';
 import { showMessage } from "react-native-flash-message";
-import GoogleLoginButton from '@/components/GoogleLoginButton';
+
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+
+
+// Configure Google Sign-In
+
+// const clientId = Constants.expoConfig?.extra?.clientId; 
+
+// GoogleSignin.configure({
+//   offlineAccess: true, // Request a refresh token (if needed for backend)
+//   forceCodeForRefreshToken: true, // For PKCE flow
+// });
 
 function Login() {
 
@@ -22,8 +34,11 @@ function Login() {
     },
     mode: 'onTouched',
   });
+
   const [isSubmitting, setSubmitting] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const setToken = useAuth((state: any) => state.setToken);
+  const setUser = useAuth((state: any) => state.setUser)
 
   const onSubmit = async (formData: any) => {
       try 
@@ -43,6 +58,9 @@ function Login() {
         });
 
         const data = await response.json();
+        await setToken(data.access_token);
+        await setUser(data.user);
+        
         console.log("data", data)
 
         if(response.ok) {

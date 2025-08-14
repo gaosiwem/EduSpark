@@ -1,8 +1,10 @@
 import random
 import string
 from datetime import datetime, timedelta
+from typing import Optional
 
 from fastapi import Depends
+import jwt
 from sqlalchemy import select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +13,12 @@ from database.db import get_async_session
 from database.models import User, VerificationCode
 
 import logging
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -134,3 +142,10 @@ async def reset_password(email: str, password: str, session: AsyncSession):
 
     logger.info(f"Password reset for user: {email}")
     return True
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    expire = datetime.now() + (expires_delta or timedelta(minutes=15))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, os.getenv("AUTH_SECRET_KEY"), os.getenv("AUTH_ALGORITHM"))

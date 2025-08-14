@@ -12,7 +12,7 @@ import FileUploadButton from "@/components/FileUploadButton";
 import PasteLinkTextButton from "@/components/PasteLinkTextButton";
 import AudioVideoRecorder from "@/components/AudioVideoRecorder";
 import LearnAnythingButton from "@/components/LearnAnythingButton";
-import { useTranscriptStore } from '@/state/store/appStore';
+import { useAuth, useTranscriptStore } from '@/state/store/appStore';
 import { getUploadedFiles } from "@/api-service/api-call";
 import Menu from "./Menu";
 
@@ -30,8 +30,11 @@ export default function HomeScreen() {
   const apiUrl = Constants.expoConfig?.extra?.apiUrl;
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const user = useAuth((state) => state.user);
 
-  const setTranscriptData = useTranscriptStore((state) => state.setTranscriptData);
+  const setTranscriptData = useTranscriptStore(
+    (state) => state.setTranscriptData
+  );
 
   const {
     control,
@@ -43,7 +46,7 @@ export default function HomeScreen() {
     setRefreshing(true);
     try {
       const data = await getUploadedFiles();
-      setUploads(data)
+      setUploads(data);
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
@@ -51,7 +54,7 @@ export default function HomeScreen() {
     }
   };
 
-  const handleFileUpload:any = async (file: any) => {
+  const handleFileUpload: any = async (file: any) => {
     if (!file || file.canceled || !file.assets || !file.assets[0]) return;
     const asset = file.assets[0];
     const mimeType = asset.mimeType;
@@ -65,8 +68,12 @@ export default function HomeScreen() {
 
     await new Promise((res) => setTimeout(res, 30)); // Simulate delay
 
-    let url = mimeType === "application/pdf" ? `${apiUrl}/upload-file/` :
-              mimeType === "video/mp4" ? `${apiUrl}/process-video/` : "";
+    let url =
+      mimeType === "application/pdf"
+        ? `${apiUrl}/upload-file/`
+        : mimeType === "video/mp4"
+          ? `${apiUrl}/process-video/`
+          : "";
 
     if (!url) {
       showMessage({
@@ -88,7 +95,10 @@ export default function HomeScreen() {
         showMessage({ message: "Upload Successful!", type: "success" });
         router.push("/learn");
       } else {
-        showMessage({ message: data.message || "Upload Failed", type: "danger" });
+        showMessage({
+          message: data.message || "Upload Failed",
+          type: "danger",
+        });
       }
     } catch (error) {
       showMessage({ message: "Network Error", type: "danger" });
@@ -117,19 +127,32 @@ export default function HomeScreen() {
     return () => {
       isMounted = false;
     };
-}, []);
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      router.replace("/(auth)/login"); // replace so user can’t go back
+    }
+  }, [user]);
+
+  if (!user) return null; // prevent flicker while redirecting
 
   return (
-    <ScrollView className="flex-1 bg-white pt-20 px-4" contentContainerStyle={{ paddingBottom: 40 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    <ScrollView
+      className="flex-1 bg-white pt-20 px-4"
+      contentContainerStyle={{ paddingBottom: 40 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
-              
       {/* Drawer Menu Button */}
       <Menu />
 
       <View className="items-center mb-6 pt-10">
         <Text className="font-pbold text-primary text-lg">Hi Mpho</Text>
-        <Text className="font-pbold text-primary text-base">What would you like to learn today?</Text>
+        <Text className="font-pbold text-primary text-base">
+          What would you like to learn today?
+        </Text>
       </View>
 
       <View className="gap-6">
@@ -149,7 +172,11 @@ export default function HomeScreen() {
           )}
         />
 
-        <PasteLinkTextButton icon={<icons.PaperClip color="#ffffff" />} title="Paste" subtitle="YouTube, website, text" />
+        <PasteLinkTextButton
+          icon={<icons.PaperClip color="#ffffff" />}
+          title="Paste"
+          subtitle="YouTube, website, text"
+        />
 
         <AudioVideoRecorder
           icon={<icons.Microphone />}
@@ -159,31 +186,54 @@ export default function HomeScreen() {
           onVideoRecordRequest={() => console.log("Video recorder should open")}
         />
 
-        <LearnAnythingButton placeholder="Learn anything..." onSubmit={learnAnythingSubmit} />
+        <LearnAnythingButton
+          placeholder="Learn anything..."
+          onSubmit={learnAnythingSubmit}
+        />
       </View>
 
       <View className="mt-10">
         <Text className="text-md font-bold mb-2">Uploaded Files</Text>
-        <ScrollView horizontal className="flex-row pb-10 pr-6" contentContainerStyle={{ paddingHorizontal: 10 }}>
+        <ScrollView
+          horizontal
+          className="flex-row pb-10 pr-6"
+          contentContainerStyle={{ paddingHorizontal: 10 }}
+        >
           {uploads.map((item) => (
             <TouchableOpacity
               key={item.id ?? item.file_path}
               activeOpacity={0.8}
               onPress={() => {
-                setTranscriptData({ transcript: '', fileName: item.filename, filePath: item.file_path });
+                setTranscriptData({
+                  transcript: "",
+                  fileName: item.filename,
+                  filePath: item.file_path,
+                });
                 router.push("/learn");
               }}
             >
               <View className="w-32 h-44 rounded-xl overflow-hidden border border-primary bg-gray-100 items-center justify-center p-2 mr-4">
                 {item.file_type === "application/pdf" ? (
                   <View className="items-center justify-center">
-                    <Image source={PDF_ICON} style={{ width: 30, height: 30, resizeMode: "contain" }} />
-                    <Text className="mt-2 text-center px-1 text-xs" numberOfLines={2} ellipsizeMode="tail">
+                    <Image
+                      source={PDF_ICON}
+                      style={{ width: 30, height: 30, resizeMode: "contain" }}
+                    />
+                    <Text
+                      className="mt-2 text-center px-1 text-xs"
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
                       {item.filename}
                     </Text>
                   </View>
                 ) : (
-                  <WebView source={{ uri: `http://192.168.11.114:8004/${item.file_path}` }} style={{ width: "100%", height: "100%" }} />
+                  <WebView
+                    source={{
+                      uri: `http://192.168.11.114:8004/${item.file_path}`,
+                    }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
                 )}
               </View>
             </TouchableOpacity>

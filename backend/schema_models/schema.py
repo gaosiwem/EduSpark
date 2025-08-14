@@ -18,6 +18,21 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class RegisterData(BaseModel):
+    email: str
+    password: str
+
+
+class LoginData(BaseModel):
+    email: str
+    password: str
+
+
+class VerifyEmail(BaseModel):
+    email: str
+    code: str
     
 class TokenResponse(BaseModel):
     access_token: str
