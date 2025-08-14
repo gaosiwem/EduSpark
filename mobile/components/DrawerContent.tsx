@@ -8,12 +8,17 @@ import { router } from 'expo-router';
 import { icons } from '@/constants';
 import { getChatHistory } from '@/api-service/api-call';
 import { ChatHistoryApiResponse, ProcessedConversation } from '@/interfaces';
+import { useAuth } from '@/state/store/appStore';
+import { showMessage } from 'react-native-flash-message';
+import Constants from 'expo-constants';
 
 
 export default function DrawerContent(props: any) {
 
   const [showHistory, setShowHistory] = useState(false);
   const [chatHistory, setChatHistory] = useState<ProcessedConversation[]>([]);
+
+  const logout = useAuth((state) => state.logout);
 
     useEffect(() => {
     let isMounted = true; // Flag to track component mount status
@@ -64,6 +69,32 @@ export default function DrawerContent(props: any) {
       isMounted = false;
     };
   }, []);
+
+
+  const handleLogout = () => {
+
+    logout();
+
+    const apiUrl = Constants.expoConfig?.extra?.apiUrl;
+      
+    const url = `${apiUrl}/logout/?token=${useAuth.getState().token}`;
+    console.log("logout url: ", url )
+
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    })
+      .then(res => res.json())
+      .then(data => {
+          console.log("Backend response:", data);
+          // Save access_token securely here
+        });
+
+    showMessage({
+      message: "Logged out successfully",
+      type: "success"
+    })
+  }
 
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingTop: 40 }}>
@@ -144,7 +175,7 @@ export default function DrawerContent(props: any) {
 
     {/* Bottom Logout Button */}
     <View className="mt-auto pt-6 border-t border-gray-200">
-      <TouchableOpacity onPress={() => router.push('/(main)')}>
+      <TouchableOpacity onPress={handleLogout}>
         <View className="flex flex-row gap-2">
           <icons.LogOut />
           <Text className="text-lg font-bold text-red-600">Logout</Text>

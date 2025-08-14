@@ -10,6 +10,7 @@ import FlashMessage from "react-native-flash-message";
 import { Slot } from 'expo-router';
 import { useState } from 'react';
 import Constants from "expo-constants";
+import { useAuth } from "@/state/store/appStore";
 
 
 const expoPublicKey = Constants.expoConfig?.extra?.expoPublicKey;
@@ -28,20 +29,25 @@ export default function RootLayout() {
     "Poppins-Thin": require("../assets/fonts/Poppins-Thin.ttf"),
   });
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const token = useAuth((state) => state.token);
+  const [ready, setReady] = useState(false);
 
-  //   useEffect(() => {
-  //   // Always redirect to main screen when app loads
-  //   router.replace('/(main)');
-  // }, []);
-  
-  // if (!isLoggedIn) {
-  //   return <Slot initialRouteName="(auth)/login" screenOptions={{ headerShown: false }} />;
-  // }
+   useEffect(() => {
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (ready && !token) {
+      router.replace("/(auth)/login");
+    }
+  }, [ready, token]);
+
+  if (!ready) return null;
 
   return (
-        <Stack>
-          <Stack.Screen name="(main)" options={{ headerShown: false }} />
-        </Stack>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(main)" options={{ headerShown: false }} />
+    </Stack>
   );
 }

@@ -18,6 +18,7 @@ from authlib.integrations.starlette_client import OAuth
 import os
 import json
 from sqlalchemy.ext.asyncio import AsyncSession
+import httpx
 
 
 from flask import Flask, request, jsonify
@@ -149,8 +150,8 @@ async def logout(response: Response, token: str = Depends(oauth2_scheme)):
 oauth = OAuth()
 oauth.register(
     name='google',
-    client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_MOBILE_CLIENT_ID"),
+    client_id=os.getenv("GOOGLE_WEB_GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo', # Or https://openidconnect.googleapis.com/v1/userinfo
     client_kwargs={'scope': 'openid email profile'}
@@ -171,58 +172,56 @@ oauth.register(
 # --- OAuth Endpoints ---
 @router.post('/api/login/google-mobile')
 async def login_google_mobile(request: Request):
-    
-    try:
-        # Get the ID token sent from the mobile app
-        data = await request.json()
-        id_token = data.get("idToken")
-        
-        if not id_token:
-            raise HTTPException(status_code=400, detail="Missing Google ID token.")
-        
-        decoded_token = jwt.decode(id_token, options={"verify_signature": False})
-        email = decoded_token.get("email")
+    data = await request.json()
+    id_token = data.get("idToken")
 
-        if not email:
-            raise HTTPException(status_code=400, detail="Google account has no public email.")
-                
-        user = await get_user_by_email(email)
-        if not user:
-            user = await create_user(email, None, is_verified=True, provider="google", social_id="1") # Social ID needs to be unique from Google
-            
-        remember_me_token = create_access_token(
-            data={"sub": email},
-            expires_delta=timedelta(days=REMEMBER_ME_EXPIRE_DAYS)
-        )
-        
-        # Issue a short-lived access token for immediate use
-        access_token = create_access_token(
-            data={"sub": email},
-            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        )
+    if not id_token:
+        raise HTTPException(status_code=400, detail="Missing Google ID token.")
 
-        # Return JSON response for mobile
-        return jsonify({
-                "access_token": access_token,
-                "token_type": "bearer",
-                "email": email,
-                "remember_me_token": remember_me_token # Optional: send this if you want mobile to manage "remember me"
-                # Add any other user details you want to send back
-            }            
+    # Verify the ID token with Google
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
         )
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error during Google login: {str(e)}")    
+        if resp.status_code != 200:
+            raise HTTPException(status_code=401, detail="Invalid Google ID token.")
+        token_info = resp.json()
+
+    email = token_info.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Google account has no public email.")
+
+    # Look up or create user
+    user = await get_user_by_email(email)
+    if not user:
+        user = await create_user(email, None, is_verified=True, provider="google", social_id=token_info.get("sub"))
+
+    remember_me_token = create_access_token(
+        data={"sub": email},
+        expires_delta=timedelta(days=REMEMBER_ME_EXPIRE_DAYS)
+    )
+
+    access_token = create_access_token(
+        data={"sub": email},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "email": email,
+        "remember_me_token": remember_me_token
+    }
+
 
 @router.get('/api/login/google')
 async def login_google(request: Request):
-    redirect_uri =  str(request.url_for('auth_google_callback'))
+    redirect_uri = str(request.url_for('auth_google_callback'))
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @router.get('/api/auth/google/callback')
 async def auth_google_callback(request: Request, response: Response):
     token = await oauth.google.authorize_access_token(request)
-
     user_info = token.get("userinfo")
     email = user_info.get("email") if user_info else None
 
@@ -231,38 +230,34 @@ async def auth_google_callback(request: Request, response: Response):
 
     user = await get_user_by_email(email)
     if not user:
-        user = await create_user(email, None, is_verified=True, provider="google", social_id="1")
-    
-    # Generate and set "remember me" cookie
+        user = await create_user(email, None, is_verified=True, provider="google", social_id=user_info.get("sub"))
+
     remember_me_token = create_access_token(
         data={"sub": email},
         expires_delta=timedelta(days=REMEMBER_ME_EXPIRE_DAYS)
     )
-    
+
     response.set_cookie(
         key=REMEMBER_ME_COOKIE_NAME,
         value=remember_me_token,
         httponly=True,
-        secure=True, # IMPORTANT: Set to True in production with HTTPS
-        samesite="Lax", # Controls when the cookie is sent with cross-site requests
-        max_age=int(timedelta(days=REMEMBER_ME_EXPIRE_DAYS).total_seconds()) # Set max_age
+        secure=True,
+        samesite="Lax",
+        max_age=int(timedelta(days=REMEMBER_ME_EXPIRE_DAYS).total_seconds())
     )
 
-    # Issue a short-lived access token for immediate use
     access_token = create_access_token(
         data={"sub": email},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    
+
     redirect_url = (
-        f"{os.getenv('FRONTEND_BASE_URL')}/login/callback" # This is the React route
+        f"{os.getenv('FRONTEND_BASE_URL')}/login/callback"
         f"?access_token={access_token}"
         f"&token_type=bearer"
         f"&email={email}"
     )
     return RedirectResponse(url=redirect_url, status_code=status.HTTP_302_FOUND)
-    
-    return {"access_token": access_token, "token_type": "bearer", "email": email}
 
 @router.get("/api/login/facebook")
 async def login_facebook(request: Request):

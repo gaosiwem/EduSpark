@@ -1,55 +1,51 @@
 import React, { useEffect } from 'react';
-import { Button, Alert } from 'react-native';
+import { Button, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-// import * as Google from 'expo-auth-session/providers/google';
-// import { useAuthRequest, ResponseType } from 'expo-auth-session';
-
-// import { useAuth } from '../context/AuthContext';
-
+import * as Google from 'expo-auth-session/providers/google';
+import Constants from 'expo-constants';
+import * as AuthSession from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
 
+const useProxy = true; // Needed for Expo Go in development
+const redirectUri = AuthSession.makeRedirectUri({ useProxy });
+
+const googleClientId = Constants.expoConfig?.extra?.clientId;  
+const googleWebClientId = Constants.expoConfig?.extra?.clientWebId; 
+const apiUrl = Constants.expoConfig?.extra?.apiUrl;
+
 export default function GoogleLoginButton() {
-  // const { setUser, storeAccessToken } = useAuth(); // Your auth context
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: Platform.select({
+      android: googleClientId,
+      web: googleWebClientId,
+    }),
+    redirectUri,
+  });
 
-  // const [request, response, promptAsync] = Google.useAuthRequest({
-  //   clientId: GOOGLE_CLIENT_ID,
-  //   responseType: ResponseType.Token,
-  //   scopes: ['profile', 'email'],
-  // });
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
 
-  // useEffect(() => {
-  //   if (response?.type === 'success') {
-  //     const { access_token } = response.params;
-
-  //     // Fetch user info using token
-  //     fetch('https://www.googleapis.com/userinfo/v2/me', {
-  //       headers: { Authorization: `Bearer ${access_token}` },
-  //     })
-  //       .then(res => res.json())
-  //       .then(async userInfo => {
-  //         await storeAccessToken(access_token);
-  //         setUser({
-  //           email: userInfo.email,
-  //           name: userInfo.name,
-  //           avatar: userInfo.picture,
-  //         });
-  //         Alert.alert('Success', `Logged in as ${userInfo.email}`);
-  //       })
-  //       .catch(err => {
-  //         console.error(err);
-  //         Alert.alert('Error', 'Failed to fetch user info');
-  //       });
-  //   } else if (response?.type === 'error') {
-  //     Alert.alert('Error', 'Google login failed');
-  //   }
-  // }, [response]);
+      fetch(`${apiUrl}/api/login/google-mobile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: id_token })
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log("Backend response:", data);
+          // Save access_token securely here
+        })
+        .catch(err => console.error("Error logging in:", err));
+    }
+  }, [response]);
 
   return (
     <Button
+      disabled={!request}
       title="Login with Google"
-      // onPress={() => promptAsync()}
-      // disabled={!request}
+      onPress={() => promptAsync()} // ✅ No useProxy here
     />
   );
 }

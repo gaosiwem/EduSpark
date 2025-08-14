@@ -10,19 +10,7 @@ import { Link, router } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import Constants from 'expo-constants';
 import { showMessage } from "react-native-flash-message";
-
-import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
-
-
-// Configure Google Sign-In
-
-// const clientId = Constants.expoConfig?.extra?.clientId; 
-
-// GoogleSignin.configure({
-//   offlineAccess: true, // Request a refresh token (if needed for backend)
-//   forceCodeForRefreshToken: true, // For PKCE flow
-// });
+import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 function Login() {
 
@@ -45,8 +33,6 @@ function Login() {
         const apiUrl = Constants.expoConfig?.extra?.apiUrl;
         
         const url = `${apiUrl}/login`
-
-        console.log("URL1:", url)
 
         const response = await fetch(url, {
             method: 'POST',
@@ -86,43 +72,6 @@ function Login() {
 
         setSubmitting(false);
 };
-
-  // const loginWithGoogle = async () => {
-
-  //   try {
-  //     await GoogleSignin.hasPlayServices();
-  //     const userInfo = await GoogleSignin.signIn();
-  //     const idToken = userInfo.data?.idToken;
-
-  //     const apiUrl = Constants.expoConfig?.extra?.apiUrl;     
-          
-  //     const url = `${apiUrl}/login/google-mobile`;
-
-  //         // Make a request to your backend's Google login endpoint
-  //     const response = await fetch(url, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ idToken }),
-  //     });
-
-  //     const data = await response.json();
-  //     console.log('Backend response:', data);
-
-  //   // Handle the backend's response (e.g., navigate to a protected screen, store tokens)
-  //   } catch (error: any) { // Use 'any' for error if not specifically typed, or add type guards
-  //       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-  //         console.log('User cancelled the login flow');
-  //       } else if (error.code === statusCodes.IN_PROGRESS) {
-  //         console.log('Sign in is in progress');
-  //       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-  //         console.log('Play services not available or outdated');
-  //       } else {
-  //         console.error('Google Sign-In Error:', error);
-  //       }
-  //   }
-  // };
 
   return (
   <SafeAreaView className='bg-secondary h-full '>
@@ -178,12 +127,13 @@ function Login() {
           <View>
             <Text className='font-psemibold'>Or Continue with</Text>
           </View>
-        <SocialMedialButton 
+        {/* <SocialMedialButton 
             title='Sign in with google'
             // handlePress={() => loginWithGoogle()}
             handlePress={() => console.log("Google Sign-In Clicked")}
             image={images.google}
-        />
+        /> */}
+        <GoogleLoginButton />
         <View className='mt-5'>
           <Text>Don’t have an Account? <Link href="/register" className='text-primary underline font-psemibold'>SIGN UP</Link></Text>          
         </View>

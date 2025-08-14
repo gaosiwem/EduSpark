@@ -4,6 +4,14 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+interface AuthState {
+  user: any | null;
+  token: any | null;
+  setToken: (token: string) => void;
+  setUser: (user: any) => void;
+  logout: () => void
+}
+
 interface TranscriptState {
   transcript: string;
   fileName: string;
@@ -45,13 +53,16 @@ export const useTranscriptStore = create<TranscriptState>()(
 );
 
 
-export const useAuth = create(
+export const useAuth = create<AuthState>()(
   persist(
     set => ({
       user: null,
       token: null,
       setUser: (user: any) => set({ user}),
-      setToken: (token: any) => set({ token })
+      setToken: (token: any) => set({ token }),
+      logout: () => {
+          set({ user: null, token: null})
+      },
     }),
     {
       name: 'auth-store',

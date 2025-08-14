@@ -61,6 +61,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       "apiUrl": process.env.API_URL,
       "clientId": process.env.GOOGLE_MOBILE_CLIENT_ID,
+      "clientWebId": process.env.GOOGLE_WEB_CLIENT_ID,
       "expoPublicKey": process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
     },
   };
